@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anonymous Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="username-modal" class="modal">
+    <div class="modal-content">
+      <h2>Enter your chat name</h2>
+      <input type="text" id="username-input" placeholder="Your name..." maxlength="20" />
+      <button id="set-username">Join Chat</button>
+    </div>
+  </div>
+  <div id="chat-container" style="display:none;">
+    <div id="chat-header">
+      <img src="avatar.png" id="avatar" alt="Avatar">
+      <span id="chat-title">💬 Anonymous Chat</span>
+      <span id="user-display"></span>
+      <button id="change-username" title="Change name">&#x1F464;</button>
+    </div>
+    <ul id="messages"></ul>
+    <form id="form" autocomplete="off">
+      <input id="input" placeholder="Type your message..." autocomplete="off" />
+      <button type="button" id="emoji-btn" title="Add emoji">😊</button>
+      <button type="submit">Send</button>
+    </form>
+    <div id="emoji-picker" style="display:none;"></div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
