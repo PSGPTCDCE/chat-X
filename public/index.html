@@ -1,35 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Anonymous Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div id="username-modal" class="modal">
+  <!-- Username Modal -->
+  <div id="username-modal" class="modal" aria-labelledby="modal-title" aria-hidden="true">
     <div class="modal-content">
-      <h2>Enter your chat name</h2>
-      <input type="text" id="username-input" placeholder="Your name..." maxlength="20" />
-      <button id="set-username">Join Chat</button>
+      <h2 id="modal-title">Welcome to Anonymous Chat!</h2>
+      <p>Please enter your chat name to join.</p>
+      <input
+        type="text"
+        id="username-input"
+        placeholder="Your name..."
+        maxlength="20"
+        aria-label="Enter your chat name"
+        required
+      />
+      <button id="set-username" aria-label="Join chat">Join Chat</button>
     </div>
   </div>
-  <div id="chat-container" style="display:none;">
-    <div id="chat-header">
-      <img src="avatar.png" id="avatar" alt="Avatar">
-      <span id="chat-title">💬 Anonymous Chat</span>
-      <span id="user-display"></span>
-      <button id="change-username" title="Change name">&#x1F464;</button>
-    </div>
-    <ul id="messages"></ul>
+
+  <!-- Chat Container -->
+  <div id="chat-container" style="display: none;">
+    <header id="chat-header">
+      <img src="avatar.png" id="avatar" alt="User Avatar" width="40" height="40">
+      <h1 id="chat-title">💬 Anonymous Chat</h1>
+      <span id="user-display" aria-live="polite"></span>
+      <button id="change-username" title="Change name" aria-label="Change username">👤</button>
+    </header>
+
+    <main>
+      <ul id="messages" role="log" aria-live="polite"></ul>
+    </main>
+
     <form id="form" autocomplete="off">
-      <input id="input" placeholder="Type your message..." autocomplete="off" />
-      <button type="button" id="emoji-btn" title="Add emoji">😊</button>
-      <button type="submit">Send</button>
+      <div class="input-container">
+        <input
+          id="input"
+          placeholder="Type your message..."
+          autocomplete="off"
+          aria-label="Type your message"
+          required
+        />
+        <button type="button" id="emoji-btn" title="Add emoji" aria-label="Add emoji">😊</button>
+        <button type="submit" aria-label="Send message">Send</button>
+      </div>
     </form>
-    <div id="emoji-picker" style="display:none;"></div>
+
+    <div id="emoji-picker" class="emoji-picker" style="display: none;" aria-hidden="true"></div>
   </div>
+
   <script src="/socket.io/socket.io.js"></script>
-  <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js"></script>
+  <script>
+const socket = io();
+const usernameModal = document.getElementById('username-modal');
+const chatContainer = document.getElementById('chat-container');
+const usernameInput = document.getElementById('username-input');
+const setUsernameBtn = document.getElementById('set-username');
+const messages = document.getElementById('messages');
+const form = document.getElementById('form');
+const input = document.getElementById('input');
+const changeUsernameBtn = document.getElementById('change-username');
+const userDisplay = document.getElementById('user-display');
+
+let myName = localStorage.getItem('chatName') || '';
+
+function showUsernameModal() {
+  usernameModal.style.display = 'flex';
+  chatContainer.style.display = 'none';
+  usernameInput.value = myName;
+  usernameInput.focus();
+}
+
+function hideUsernameModal() {
+  usernameModal.style.display = 'none';
+  chatContainer.style.display = 'block';
+}
+
+function setName(name) {
+  myName = name.trim() || 'Anonymous';
+  localStorage.setItem('chatName', myName);
+  userDisplay.textContent = myName;
+}
+
+if (!myName) {
+  showUsernameModal();
+} else {
+  setName(myName);
+  hideUsernameModal();
+}
+
+setUsernameBtn.addEventListener('click', () => {
+  if (usernameInput.value.trim()) {
+    setName(usernameInput.value.trim());
+    hideUsernameModal();
+  }
+});
+
+changeUsernameBtn.addEventListener('click', showUsernameModal);
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const message = input.value.trim();
+  if (message) {
+    socket.emit('chat message', { name: myName, text: message });
+    input.value = '';
+  }
+});
+
+socket.on('chat message', (data) => {
+  const li = document.createElement('li');
+  li.textContent = `${data.name}: ${data.text}`;
+  messages.appendChild(li);
+  messages.scrollTop = messages.scrollHeight;
+});
+  </script>
 </body>
 </html>
